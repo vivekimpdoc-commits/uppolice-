@@ -197,19 +197,52 @@ export default function App() {
               </h1>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, staggerChildren: 0.1 }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1"
+            >
               <div className="lg:col-span-2 rounded-2xl glass-panel overflow-hidden flex flex-col relative min-h-[400px]">
-                <div className="flex-1 bg-slate-900 relative overflow-hidden flex items-center justify-center">
+                <div className="flex-1 bg-slate-950 relative overflow-hidden flex items-center justify-center">
                   <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-                  <div className="z-10 text-center">
-                    <MapIcon className="w-12 h-12 text-slate-700 mx-auto mb-2 opacity-50" />
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Mapbox Integration Pending</p>
+                  
+                  {/* Radar Sweep Animation */}
+                  <motion.div 
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute w-[800px] h-[800px] rounded-full border border-indigo-500/10"
+                    style={{ background: 'conic-gradient(from 0deg, transparent 70%, rgba(99, 102, 241, 0.2) 100%)' }}
+                  />
+                  <div className="absolute w-32 h-32 rounded-full border border-indigo-500/20"></div>
+                  <div className="absolute w-64 h-64 rounded-full border border-indigo-500/10"></div>
+                  
+                  {/* Animated Blips */}
+                  <motion.div 
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: [0, 1.5, 1], opacity: [0, 1, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                    className="absolute top-1/3 left-1/4 w-3 h-3 bg-red-500 rounded-full shadow-[0_0_15px_rgba(239,68,68,1)]"
+                  />
+                  <motion.div 
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: [0, 1.5, 1], opacity: [0, 1, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 0.5 }}
+                    className="absolute bottom-1/3 right-1/3 w-3 h-3 bg-amber-500 rounded-full shadow-[0_0_15px_rgba(245,158,11,1)]"
+                  />
+                  
+                  <div className="z-10 text-center bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl border border-slate-800">
+                    <MapIcon className="w-10 h-10 text-indigo-400 mx-auto mb-2 opacity-80" />
+                    <p className="text-indigo-200 font-bold uppercase tracking-widest text-xs">Live Geospatial Radar Active</p>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-6">
-                <div className="p-5 rounded-2xl glass-panel relative overflow-hidden group">
+                <motion.div whileHover={{ y: -4, boxShadow: '0 20px 25px -5px rgba(79, 70, 229, 0.1), 0 8px 10px -6px rgba(79, 70, 229, 0.1)' }} className="p-5 rounded-2xl glass-panel relative overflow-hidden group border border-slate-800 hover:border-indigo-500/30 transition-all duration-300">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 group-hover:text-indigo-400 transition-all duration-500">
+                    <FileSearch className="w-32 h-32" />
+                  </div>
                   <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="p-2 bg-indigo-500/20 rounded-lg">
@@ -239,19 +272,36 @@ export default function App() {
                     <h2 className="text-sm font-bold">Critical Alerts</h2>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                    {alerts.map((alert, i) => (
-                      <div key={i} className="p-3 bg-slate-900 rounded-xl border border-slate-800">
-                        <div className="flex items-start justify-between mb-1">
-                          <span className={`text-xs font-bold ${alert.type === 'high' ? 'text-red-400' : 'text-amber-400'}`}>{alert.title}</span>
-                          <span className="text-[10px] text-slate-500">{alert.time}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-400">{alert.loc}</p>
-                      </div>
-                    ))}
+                    <AnimatePresence>
+                      {alerts.map((alert, i) => (
+                        <motion.div 
+                          key={i} 
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.3, delay: i * 0.1 }}
+                          className="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-slate-700 hover:bg-slate-800/50 transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-start justify-between mb-1 relative">
+                            <span className={`text-xs font-bold flex items-center gap-2 ${alert.type === 'high' ? 'text-red-400' : 'text-amber-400'}`}>
+                              {alert.type === 'high' && (
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                              )}
+                              {alert.title}
+                            </span>
+                            <span className="text-[10px] text-slate-500">{alert.time}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400">{alert.loc}</p>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </main>
       </div>

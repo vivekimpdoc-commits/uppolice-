@@ -12,12 +12,8 @@ class Settings:
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
     
-    # PostgreSQL (Structured Geo-Spatial Data)
-    POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "policing_db")
-    SQLALCHEMY_DATABASE_URI: str = f"postgresql+psycopg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}/{POSTGRES_DB}"
+    # SQLite (Local file DB to ensure app runs without installation)
+    SQLALCHEMY_DATABASE_URI: str = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///./investigation.db")
     
     # MongoDB (Unstructured Case Files)
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")

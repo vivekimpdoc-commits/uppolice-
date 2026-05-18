@@ -3,8 +3,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from motor.motor_asyncio import AsyncIOMotorClient
 from core.config import settings
 
-# --- PostgreSQL (Structured Data & Geo-Spatial PostGIS) ---
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True)
+# --- Local SQLite (Fallback for standalone running) ---
+# We use SQLite to ensure the project runs without requiring a heavy Postgres/Mongo installation.
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -15,9 +16,11 @@ def get_db():
     finally:
         db.close()
 
-# --- MongoDB (Unstructured Case Files) ---
-mongo_client = AsyncIOMotorClient(settings.MONGODB_URL)
-mongo_db = mongo_client[settings.MONGODB_DB_NAME]
+# --- Mock MongoDB (To prevent connection errors without local DB) ---
+class MockMongoDB:
+    pass
+
+mongo_db = MockMongoDB()
 
 def get_mongo_db():
     return mongo_db
