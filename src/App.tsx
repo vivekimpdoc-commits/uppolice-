@@ -264,7 +264,7 @@ export default function App() {
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
 
                 <div className="flex-1 rounded-2xl glass-panel flex flex-col overflow-hidden min-h-[300px]">
                   <div className="p-4 border-b border-slate-800 flex items-center gap-2">
