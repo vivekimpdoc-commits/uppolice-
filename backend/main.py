@@ -67,7 +67,7 @@ async def simulate_live_alerts():
 async def startup_event():
     # Start the background task for live alerts
     asyncio.create_task(simulate_live_alerts())
-    print(f"🚀 {settings.PROJECT_NAME} Backend Started.")
+    print(f"--- {settings.PROJECT_NAME} Backend Started ---")
 
 @app.get("/", tags=["Health Check"])
 def health_check():
