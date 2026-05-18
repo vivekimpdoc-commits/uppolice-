@@ -20,8 +20,64 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [isConnected, setIsConnected] = useState(true); // Mock websocket connection
+  const [isConnected, setIsConnected] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isUploading, setIsUploading] = useState(false);
+  const [alerts, setAlerts] = useState([
+    { type: 'high', title: 'Suspicious Assembly', loc: 'Sector 15, Near Metro', time: 'Just now' },
+    { type: 'medium', title: 'Unidentified Vehicle', loc: 'Highway Checkpost 4', time: '12 mins ago' },
+    { type: 'high', title: 'Emergency Distress Call', loc: 'Civil Lines, Block B', time: '28 mins ago' },
+  ]);
+
+  useEffect(() => {
+    // Connect to Backend WebSocket
+    const ws = new WebSocket('ws://localhost:8000/ws/live-alerts');
+    
+    ws.onopen = () => setIsConnected(true);
+    ws.onclose = () => setIsConnected(false);
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setAlerts(prev => [{
+          type: data.risk === 'HIGH' ? 'high' : 'medium',
+          title: data.alert,
+          loc: 'AI Detected Location',
+          time: 'Just now'
+        }, ...prev]);
+      } catch (e) {
+        console.error("Error parsing websocket message", e);
+      }
+    };
+    
+    return () => ws.close();
+  }, []);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      // Assuming backend is running on localhost:8000
+      const response = await fetch('http://localhost:8000/api/v1/upload-casefile', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      if(response.ok) {
+        alert('AI Analysis Complete:\n' + JSON.stringify(data.ai_analysis, null, 2));
+      } else {
+        alert('Error: ' + JSON.stringify(data));
+      }
+    } catch (error) {
+      alert('Upload failed. Ensure backend is running on port 8000.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-50 overflow-hidden tactical-gradient">
@@ -165,9 +221,10 @@ export default function App() {
                     <p className="text-xs text-slate-400 mb-5 leading-relaxed">
                       Upload FIRs, witness statements, and evidence for instant AI-powered forensic analysis and contradiction detection.
                     </p>
-                    <button className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-900/50 transition-all active:scale-[0.98]">
-                      Launch Hub
-                    </button>
+                    <label className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-900/50 transition-all active:scale-[0.98] cursor-pointer block text-center">
+                      {isUploading ? 'Analyzing with AI...' : 'Upload Case File'}
+                      <input type="file" className="hidden" accept=".txt,.pdf" onChange={handleFileUpload} disabled={isUploading} />
+                    </label>
                   </div>
                 </div>
 
@@ -176,14 +233,10 @@ export default function App() {
                   <div className="p-4 border-b border-slate-800 flex items-center gap-2">
                     <AlertTriangle className="text-red-500 w-4 h-4" />
                     <h2 className="text-sm font-bold">Critical Alerts</h2>
-                    <span className="ml-auto bg-red-500/20 text-red-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">3 New</span>
+                    <span className="ml-auto bg-red-500/20 text-red-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">{alerts.length} New</span>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                    {[
-                      { type: 'high', title: 'Suspicious Assembly', loc: 'Sector 15, Near Metro', time: 'Just now' },
-                      { type: 'medium', title: 'Unidentified Vehicle', loc: 'Highway Checkpost 4', time: '12 mins ago' },
-                      { type: 'high', title: 'Emergency Distress Call', loc: 'Civil Lines, Block B', time: '28 mins ago' },
-                    ].map((alert, i) => (
+                    {alerts.map((alert, i) => (
                       <div key={i} className="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer group">
                         <div className="flex items-start justify-between mb-1">
                           <span className={`text-xs font-bold ${alert.type === 'high' ? 'text-red-400' : 'text-amber-400'}`}>
