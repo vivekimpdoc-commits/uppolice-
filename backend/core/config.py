@@ -17,7 +17,7 @@ class Settings:
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "policing_db")
-    SQLALCHEMY_DATABASE_URI: str = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}/{POSTGRES_DB}"
+    SQLALCHEMY_DATABASE_URI: str = f"postgresql+psycopg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}/{POSTGRES_DB}"
     
     # MongoDB (Unstructured Case Files)
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
